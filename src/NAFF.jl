@@ -1,5 +1,6 @@
 module NAFF
+using FFTW
 
-# Write your package code here.
+
 
 end
