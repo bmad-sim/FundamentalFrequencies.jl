@@ -63,10 +63,10 @@ function naff(
     # Bins turns/2+1 … turns-1 correspond to negative frequencies
     # (aliased into the upper half of the FFT output).
     idx_shifted = @. ifelse(idx_max <= turns/2, idx_max - 1, idx_max - 1 - turns)
-    fr_estimate = (idx_shifted + 1)*f_resolution
+    guess = (idx_shifted + 1)*f_resolution
 
-    # 5) Now do parabolic refinement of fr_estimate to 
-    # threshold accuracy
+    # 5) Now we need to vary our guess until the inner product 
+    # is maximized. This is done using quadratic interpolation
     
 
   end
@@ -80,7 +80,8 @@ function newton_cotes_weights(integrand)
   # Initialize first, always on CPU
   weights = Vector{eltype(integrand)}(undef, N) 
   K = div(N, 6)
-  # interior shared-endpoint indices
+  
+  # interior shared-endpoint indices, require double counting
   interior = 6 .* (1:K-1)
 
   weights[1]   = 41.
@@ -91,7 +92,6 @@ function newton_cotes_weights(integrand)
   weights[6]   = 216.
   weights[N]  += 41.
 
-  # Central endpoints need double counting 41*2
   weights[interior]     .+= 82. 
   weights[interior .+ 1] .+= 216.
   weights[interior .+ 2] .+= 27. 
@@ -99,18 +99,16 @@ function newton_cotes_weights(integrand)
   weights[interior .+ 4] .+= 27.
   weights[interior .+ 5] .+= 216.
 
+  # Now copy result to device
   weights_device = similar(integrand, N)
   copyto!(weights_device, weights)
+
   return weights_device
 end
 
-# https://mathworld.wolfram.com/HardysRule.html
-# Evaluate win
 function integrate(integrand::AbstractMatrix, weights=newton_cotes_weights(size(integrand, 2)))
   @assert size(integrand, 2) == length(weights) "Sizes of weights and integrand arrays do not match"
-  turns = size(integrand, 2) - 1
-  f = 1 / (140 * turns) 
-  return f .* (integrand * weights)
+  return (integrand * weights) ./ 140
 end
 
 function f_refine()
