@@ -1,3 +1,9 @@
+#=
+
+This entire file was written by iterating with Claude.
+
+=#
+
 """
     test_naff.jl  ─  Comprehensive Test.jl suite for NAFF
 
