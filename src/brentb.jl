@@ -19,9 +19,9 @@ Set to 0 to skip mid-loop checks (one final check always runs at return).
 """
 @generated function brentb(
     g,
-    a::AbstractArray{T,1},
-    b::AbstractArray{T,1};
-    tol         = T(1e-8),
+    a::AbstractArray{T},
+    b::AbstractArray{T};
+    tol         = T(1e-13),
     maxiter     = 100,
     check_every = 1,
 ) where {T}
