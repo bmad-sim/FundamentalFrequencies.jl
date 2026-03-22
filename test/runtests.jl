@@ -1,12 +1,3 @@
-#=
-
-This entire file was written by iterating with Claude.
-
-=#
-
-using NAFF
-using Test
-using Printf, LinearAlgebra, Random, Statistics
 """
     test_naff.jl  ─  Comprehensive Test.jl suite for NAFF
 
@@ -60,8 +51,15 @@ Test groups
   M. Closely-spaced freqs   – Δf = 10/N, 5/N, 3/N; batch resolution
   N. Noise robustness       – SNR 40/20/10 dB, single and batch
   O. Determinism            – same input always gives identical output
-  P. Worked example         – accelerator signal (printed, not asserted)
+  P. Type stability (JET)   – @test_opt on ComplexF64/F32, n=1/2, window_order=1/2
+  Q. Worked example         – accelerator signal (printed, not asserted)
 """
+
+using Test
+using NAFF
+using Printf, LinearAlgebra, Random, Statistics, JET
+# JET is loaded inside testset P so the rest of the suite runs even if it is
+# not installed. Add JET to [extras] / [targets] in Project.toml to enable.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # One pure signal-construction helper — no wrappers around NAFF.naff
@@ -763,7 +761,41 @@ end # O
 end # NAFF (top-level testset)
 
 # ═════════════════════════════════════════════════════════════════════════════
-# P. Worked example — accelerator turn-by-turn signal (printed, not asserted)
+# P. Type stability — JET.jl
+# ═════════════════════════════════════════════════════════════════════════════
+# JET.@test_opt checks that Julia's compiler infers concrete types throughout
+# naff() with no runtime dispatch, dynamic dispatch, or type instabilities.
+# We test the three most important concrete input types separately because
+# Julia specialises code per eltype, so each is an independent compilation.
+#
+# @test_opt fails if JET finds any "optimization failure" (runtime dispatch).
+# Ignorelist entries suppress known false-positives from stdlib/FFTW internals
+# that are outside NAFF's own code.
+
+@testset "P. Type stability (JET)" begin
+
+    using JET
+
+    # Representative small matrices — JET analyses the compiler IR, not the
+    # runtime values, so signal length and nrows don't need to be large.
+    mat64 = ones(ComplexF64,  4, 64)
+    mat32 = ones(ComplexF32,  4, 64)
+
+    # Calls to test — cover the three public entry-point forms
+    calls = [
+        ("Matrix{ComplexF64}, n=1",            () -> NAFF.naff(mat64, 1)),
+        ("Matrix{ComplexF64}, n=2, window=2",  () -> NAFF.naff(mat64, 2; window_order=2)),
+        ("Matrix{ComplexF32}, n=1",            () -> NAFF.naff(mat32, 1)),
+    ]
+
+    @testset "$label" for (label, call) in calls
+        @test_opt ignored_modules=[Base] call()
+    end
+
+end # P
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Q. Worked example — accelerator turn-by-turn signal (printed, not asserted)
 # ═════════════════════════════════════════════════════════════════════════════
 
 let
