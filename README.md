@@ -5,7 +5,7 @@
 [![Build Status](https://github.com/mattsignorelli/NAFF.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mattsignorelli/NAFF.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/mattsignorelli/NAFF.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/mattsignorelli/NAFF.jl)
 
-This package provides a Julia implementation of the [Numerical Analysis of Fundamental Frequencies (NAFF) method by J. Laskar](https://www.sciencedirect.com/science/article/pii/016727899290028L) to compute fundamental frequencies of quasi-periodic systems to high precision. The evolution of the fundamental frequencies with time can be used to measure chaos. 
+This package provides a Julia implementation of the [Numerical Analysis of Fundamental Frequencies (NAFF) method by J. Laskar](https://www.sciencedirect.com/science/article/pii/016727899290028L) to compute fundamental frequencies of quasi-periodic systems to high precision. The evolution of the fundamental frequencies with time can be used to measure chaos. Some papers of interest:
 
 - [The chaotic motion of the solar system: A numerical estimate of the size of the chaotic zones](https://www.sciencedirect.com/science/article/pii/001910359090084M)
 - [Application of Frequency Map Analysis to the ALS](https://cds.cern.ch/record/301630/files/p183.pdf)
