@@ -42,9 +42,9 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1)
   frequencies = similar(data, real(eltype(data)), (n_particles, n_frequencies))
   amplitudes = similar(data, complex(eltype(data)), (n_particles, n_frequencies))
 
-  U .= 0
-  frequencies .= 0
-  amplitudes .= 0
+  fill!(U, 0)
+  fill!(frequencies, 0)
+  fill!(amplitudes, 0)
 
   # Utility function to compute inner product
   inner_prod(f,g) = sum(@.(f * chi' * conj(g)), dims=2) ./ turns
