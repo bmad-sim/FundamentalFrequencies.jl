@@ -5,7 +5,12 @@
 [![Build Status](https://github.com/mattsignorelli/NAFF.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mattsignorelli/NAFF.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/mattsignorelli/NAFF.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/mattsignorelli/NAFF.jl)
 
-This package provides a Julia implementation of the [Numerical Analysis of Fundamental Frequencies (NAFF) method by J. Laskar](https://www.sciencedirect.com/science/article/pii/016727899290028L) that is branchless and vectorized for GPU-accelerated, batched NAFF. With `NAFF.jl`, one can do NAFF on e.g. a million particles in parallel on a GPU.
+This package provides a Julia implementation of the [Numerical Analysis of Fundamental Frequencies (NAFF) method by J. Laskar](https://www.sciencedirect.com/science/article/pii/016727899290028L) to compute fundamental frequencies of quasi-periodic systems to high precision. The evolution of the fundamental frequencies with time can be used to measure chaos. 
+
+- [The chaotic motion of the solar system: A numerical estimate of the size of the chaotic zones](https://www.sciencedirect.com/science/article/pii/001910359090084M)
+- [Application of Frequency Map Analysis to the ALS](https://cds.cern.ch/record/301630/files/p183.pdf)
+
+`NAFF.jl` in particular is implemented in a branchless and vectorized way for GPU-accelerated, batched NAFF. With `NAFF.jl`, one can do NAFF on e.g. a million particles in parallel on a GPU. While `NAFF.jl` was initially developed for the [SciBmad accelerator physics code](https://github.com/bmad-sim/SciBmad.jl), the tools developed here may be useful to a much broader audience.
 
 ## Usage
 
