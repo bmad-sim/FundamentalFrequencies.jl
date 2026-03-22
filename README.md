@@ -19,4 +19,7 @@ In particular, I acknowledge the authors of FortNAFF and NAFF\_UV, Michael Ehrli
 
 ## AI Usage Disclosure
 
-Two parts of this repository were created with the assistance of AI: 1) the batched Brent optimizer, and 2) the test suite. 
+Two parts of this repository were created with the assistance of AI: 
+
+1) Batched Brent optimizer
+2) Test suite
