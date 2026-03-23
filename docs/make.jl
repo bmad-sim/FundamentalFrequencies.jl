@@ -8,7 +8,7 @@ makedocs(;
     authors="mattsignorelli <mgs255@cornell.edu> and contributors",
     sitename="QuasiperiodicFrequencies.jl",
     format=Documenter.HTML(;
-        canonical="https://mattsignorelli.github.io/QuasiperiodicFrequencies.jl",
+        canonical="https://bmad-sim.github.io/QuasiperiodicFrequencies.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -18,6 +18,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/mattsignorelli/NAFF.jl",
+    repo="github.com/bmad-sim/QuasiperiodicFrequencies.jl",
     devbranch="main",
 )
