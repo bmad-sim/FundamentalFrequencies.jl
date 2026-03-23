@@ -1,4 +1,4 @@
-module NAFF
+module QuasiperiodicFrequencies
 using FFTW, LinearAlgebra
 export naff
 

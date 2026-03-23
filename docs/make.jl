@@ -1,14 +1,14 @@
-using NAFF
+using QuasiperiodicFrequencies
 using Documenter
 
-DocMeta.setdocmeta!(NAFF, :DocTestSetup, :(using NAFF); recursive=true)
+DocMeta.setdocmeta!(QuasiperiodicFrequencies, :DocTestSetup, :(using QuasiperiodicFrequencies); recursive=true)
 
 makedocs(;
-    modules=[NAFF],
+    modules=[QuasiperiodicFrequencies],
     authors="mattsignorelli <mgs255@cornell.edu> and contributors",
-    sitename="NAFF.jl",
+    sitename="QuasiperiodicFrequencies.jl",
     format=Documenter.HTML(;
-        canonical="https://mattsignorelli.github.io/NAFF.jl",
+        canonical="https://mattsignorelli.github.io/QuasiperiodicFrequencies.jl",
         edit_link="main",
         assets=String[],
     ),

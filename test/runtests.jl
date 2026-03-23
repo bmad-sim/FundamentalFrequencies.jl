@@ -17,7 +17,7 @@ or via the package manager:
 
 API under test
 ──────────────
-  NAFF.naff(data::AbstractMatrix, n_frequencies=1; window_order=1)
+  naff(data::AbstractMatrix, n_frequencies=1; window_order=1)
     • data         : nrows × ncols — each ROW is one signal
     • window_order : Hanning order p  (1 → Hann¹, 2 → Hann², …)
     • n_terms      : number of harmonics to extract per row
@@ -30,7 +30,7 @@ Calling convention used throughout
   Single signal vec → reshape to 1×N matrix, index result as [1,k]:
 
     sig = A .* exp.(im .* 2π .* f .* (0:N-1))
-    freqs, amps = NAFF.naff(reshape(sig, 1, :), n; window_order=p)
+    freqs, amps = naff(reshape(sig, 1, :), n; window_order=p)
     # freqs[1,1] is the dominant frequency
     # amps[1,1]  is its complex amplitude
 
@@ -68,7 +68,7 @@ using Printf, LinearAlgebra, Random, Statistics, JET
 # not installed. Add JET to [extras] / [targets] in Project.toml to enable.
 
 # ─────────────────────────────────────────────────────────────────────────────
-# One pure signal-construction helper — no wrappers around NAFF.naff
+# One pure signal-construction helper — no wrappers around naff
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Complex tone: A · exp(2πi f t),  t = 0, 1, …, N-1
@@ -85,19 +85,19 @@ tone(f, A, N) = A .* exp.(im .* 2π .* f .* (0:N-1))
             ("√2/10", sqrt(2)/10), ("π/10", π/10), ("e/10", exp(1)/10),
             ("√3/10", sqrt(3)/10), ("√5/10", sqrt(5)/10)]
         N = 1000
-        freqs, _ = NAFF.naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
+        freqs, _ = naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
         @test abs(freqs[1,1] - f_true) < 1e-10
     end
 
     @testset "output shape: (1,1) for single row, n_terms=1" begin
-        freqs, amps = NAFF.naff(reshape(tone(0.2, 1.0+0im, 500), 1, :), 1)
+        freqs, amps = naff(reshape(tone(0.2, 1.0+0im, 500), 1, :), 1)
         @test size(freqs) == (1, 1)
         @test size(amps)  == (1, 1)
     end
 
     @testset "output shape: (1,$n) for nterms=$n" for n in [1, 2, 3, 5]
         sig = sum(tone(0.05 + k*0.08, 1.0+0im, 2000) for k in 0:4)
-        freqs, amps = NAFF.naff(reshape(sig, 1, :), n)
+        freqs, amps = naff(reshape(sig, 1, :), n)
         @test size(freqs) == (1, n)
         @test size(amps)  == (1, n)
     end
@@ -106,18 +106,18 @@ tone(f, A, N) = A .* exp.(im .* 2π .* f .* (0:N-1))
         # If NAFF returned radians/turn the value would be ~2π×0.173 ≈ 1.09,
         # which is > 0.5 and would fail the range check.
         f_true = 0.173205
-        freqs, _ = NAFF.naff(reshape(tone(f_true, 1.0+0im, 1000), 1, :), 1)
+        freqs, _ = naff(reshape(tone(f_true, 1.0+0im, 1000), 1, :), 1)
         @test 0.0 < freqs[1,1] < 0.5
         @test abs(freqs[1,1] - f_true) < 1e-8
     end
 
     @testset "returned frequency is real-valued" begin
-        freqs, _ = NAFF.naff(reshape(tone(0.3, 1.0+0im, 500), 1, :), 1)
+        freqs, _ = naff(reshape(tone(0.3, 1.0+0im, 500), 1, :), 1)
         @test freqs[1,1] isa Real
     end
 
     @testset "returned amplitude is complex-valued" begin
-        _, amps = NAFF.naff(reshape(tone(0.3, 1.0+0im, 500), 1, :), 1)
+        _, amps = naff(reshape(tone(0.3, 1.0+0im, 500), 1, :), 1)
         @test amps[1,1] isa Complex
     end
 
@@ -129,7 +129,7 @@ end # A
     @testset "two harmonics: both |Δf| < 1e-9" begin
         N = 2000; fa, fb = 0.15, 0.33
         sig = tone(fa, 2.0+0im, N) .+ tone(fb, 1.0+0.5im, N)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, _ = naff(reshape(sig, 1, :), 2)
         @test maximum(abs.(sort(vec(freqs[1,:])) .- [fa, fb])) < 1e-9
     end
 
@@ -137,7 +137,7 @@ end # A
         N     = 2000
         comps = [(0.1234567, 2.0+1.0im), (0.2718281, 1.0-0.5im), (0.3141592, 0.5+0.5im)]
         sig   = sum(tone(f, A, N) for (f, A) in comps)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 3)
+        freqs, _ = naff(reshape(sig, 1, :), 3)
         @test maximum(abs.(sort(vec(freqs[1,:])) .- sort(first.(comps)))) < 1e-8
     end
 
@@ -145,14 +145,14 @@ end # A
         N     = 3000
         comps = [(0.05 + k*0.08, (1.0/(k+1))*exp(im*k)) for k in 0:4]
         sig   = sum(tone(f, A, N) for (f, A) in comps)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 5)
+        freqs, _ = naff(reshape(sig, 1, :), 5)
         @test maximum(abs.(sort(vec(freqs[1,:])) .- sort(first.(comps)))) < 1e-7
     end
 
     @testset "residual power < 1e-6 × signal after 2-term fit" begin
         N   = 1500; fa, fb = 0.15, 0.33
         sig = tone(fa, 2.0+0im, N) .+ tone(fb, 1.0+0.5im, N)
-        freqs, amps = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, amps = naff(reshape(sig, 1, :), 2)
         resid = copy(sig)
         for k in 1:2
             resid .-= amps[1,k] .* exp.(im .* 2π .* freqs[1,k] .* (0:N-1))
@@ -164,7 +164,7 @@ end # A
         N     = 2000
         comps = [(0.12, 2.0+0im), (0.27, 1.0+1.0im), (0.38, 0.5+0im)]
         sig   = sum(tone(f, A, N) for (f, A) in comps)
-        freqs, amps = NAFF.naff(reshape(sig, 1, :), 3)
+        freqs, amps = naff(reshape(sig, 1, :), 3)
         resid = copy(sig)
         for k in 1:3
             resid .-= amps[1,k] .* exp.(im .* 2π .* freqs[1,k] .* (0:N-1))
@@ -175,7 +175,7 @@ end # A
     @testset "dominant tone found first (largest |amplitude|)" begin
         N   = 1500
         sig = tone(0.20, 3.0+0im, N) .+ tone(0.35, 1.0+0im, N)
-        freqs, amps = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, amps = naff(reshape(sig, 1, :), 2)
         @test abs(freqs[1,1] - 0.20) < 1e-7   # stronger tone first
         @test abs(amps[1,1]) > abs(amps[1,2])
     end
@@ -184,8 +184,8 @@ end # A
         N   = 1500
         sig = tone(0.20, 2.0+0im, N) .+ tone(0.35, 1.0+0im, N)
         mat = reshape(sig, 1, N)
-        f1b, _ = NAFF.naff(mat, 1)
-        f2b, _ = NAFF.naff(mat, 2)
+        f1b, _ = naff(mat, 1)
+        f2b, _ = naff(mat, 2)
         @test f1b[1,1] == f2b[1,1]
     end
 
@@ -193,8 +193,8 @@ end # A
         N = 2000; fa, fb = 0.15, 0.33
         sig2 = tone(fa, 2.0+0im, N) .+ tone(fb, 1.5+0im, N)
         sig3 = sig2 .+ tone(0.42, 0.1+0im, N)
-        f2b, _ = NAFF.naff(reshape(sig2, 1, :), 2)
-        f3b, _ = NAFF.naff(reshape(sig3, 1, :), 2)
+        f2b, _ = naff(reshape(sig2, 1, :), 2)
+        f3b, _ = naff(reshape(sig3, 1, :), 2)
         @test maximum(abs.(sort(vec(f2b[1,:])) .- sort(vec(f3b[1,:])))) < 1e-6
     end
 
@@ -208,12 +208,12 @@ end # B
     mat = reshape(sig, 1, :)
 
     @testset "window=$p: |Δf| < 1e-7" for p in 1:4
-        freqs, _ = NAFF.naff(mat, 1; window_order=p)
+        freqs, _ = naff(mat, 1; window_order=p)
         @test abs(freqs[1,1] - f_true) < 1e-7
     end
 
     @testset "all four windows agree pairwise |Δf| < 1e-7" begin
-        fs = [NAFF.naff(mat, 1; window_order=p)[1][1,1] for p in 1:4]
+        fs = [naff(mat, 1; window_order=p)[1][1,1] for p in 1:4]
         @test maximum(abs.(fs .- fs[1])) < 1e-7
     end
 
@@ -222,7 +222,7 @@ end # B
         f_truths = [0.12, 0.25, 0.38]
         batch    = vcat([reshape(tone(f, 1.0+0im, N2), 1, N2) for f in f_truths]...)
         for p in [2, 3, 4]
-            freqs, _ = NAFF.naff(batch, 1; window_order=p)
+            freqs, _ = naff(batch, 1; window_order=p)
             @test maximum(abs.(vec(freqs[:,1]) .- f_truths)) < 1e-7
         end
     end
@@ -234,37 +234,37 @@ end # C
 
     @testset "large amplitude (1e6): rel err < 1e-6" begin
         A_true = 1e6*(1.0+1.0im)
-        _, amps = NAFF.naff(reshape(tone(0.25, A_true, 800), 1, :), 1)
+        _, amps = naff(reshape(tone(0.25, A_true, 800), 1, :), 1)
         @test abs(amps[1,1] - A_true) / abs(A_true) < 1e-6
     end
 
     @testset "small amplitude (1e-6): rel err < 1e-6" begin
         A_true = 1e-6*(1.0-1.0im)
-        _, amps = NAFF.naff(reshape(tone(0.25, A_true, 800), 1, :), 1)
+        _, amps = naff(reshape(tone(0.25, A_true, 800), 1, :), 1)
         @test abs(amps[1,1] - A_true) / abs(A_true) < 1e-6
     end
 
     @testset "purely imaginary amplitude" begin
-        _, amps = NAFF.naff(reshape(tone(0.2, 0.0+3.0im, 800), 1, :), 1)
+        _, amps = naff(reshape(tone(0.2, 0.0+3.0im, 800), 1, :), 1)
         @test abs(real(amps[1,1])) < 1e-5
         @test abs(imag(amps[1,1]) - 3.0) < 1e-5
     end
 
     @testset "unit amplitude: |Δ|A|| < 1e-5" begin
-        _, amps = NAFF.naff(reshape(tone(0.3, 1.0+0im, 500), 1, :), 1)
+        _, amps = naff(reshape(tone(0.3, 1.0+0im, 500), 1, :), 1)
         @test abs(abs(amps[1,1]) - 1.0) < 1e-5
     end
 
     @testset "phase preserved: |Δφ| < 1e-5 for φ=$φ" for φ in [0.0, π/6, π/3, π/2, π, -π/4]
         A_true = 2.0 * exp(im*φ)
-        _, amps = NAFF.naff(reshape(tone(0.22, A_true, 1000), 1, :), 1)
+        _, amps = naff(reshape(tone(0.22, A_true, 1000), 1, :), 1)
         @test abs(mod(angle(amps[1,1]) - φ + π, 2π) - π) < 1e-5
     end
 
     @testset "amplitude scales linearly across 6 orders of magnitude" begin
         scales = [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
         ratios = [begin
-                      _, amps = NAFF.naff(reshape(tone(0.3, s*(1.0+0im), 1000), 1, :), 1)
+                      _, amps = naff(reshape(tone(0.3, s*(1.0+0im), 1000), 1, :), 1)
                       abs(amps[1,1]) / s
                   end for s in scales]
         @test maximum(abs.(ratios .- ratios[1])) < 1e-4
@@ -273,7 +273,7 @@ end # C
     @testset "amplitude independent of frequency" begin
         A_true = 1.5 - 0.7im
         errs = [begin
-                    _, amps = NAFF.naff(reshape(tone(f, A_true, 1000), 1, :), 1)
+                    _, amps = naff(reshape(tone(f, A_true, 1000), 1, :), 1)
                     abs(amps[1,1] - A_true) / abs(A_true)
                 end for f in [0.1, 0.25, 0.4]]
         @test maximum(errs) < 1e-4
@@ -283,7 +283,7 @@ end # C
         N   = 2000
         A1, A2 = 2.0+1.0im, 0.5-0.3im
         sig = tone(0.15, A1, N) .+ tone(0.35, A2, N)
-        freqs, amps = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, amps = naff(reshape(sig, 1, :), 2)
         idx = sortperm(vec(freqs[1,:]))
         @test abs(amps[1,idx[1]] - A1) / abs(A1) < 1e-4
         @test abs(amps[1,idx[2]] - A2) / abs(A2) < 1e-4
@@ -299,7 +299,7 @@ end # D
     @testset "$label: result in (0, 0.5)" for (label, N) in [
             ("N=13", 13), ("N=31", 31), ("N=32", 32), ("N=100", 100),
             ("N=473", 473), ("N=1000", 1000), ("N=2000", 2000)]
-        freqs, _ = NAFF.naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
+        freqs, _ = naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
         @test 0.0 < freqs[1,1] < 0.5
     end
 
@@ -311,24 +311,24 @@ end # D
             ("N=473",  473,  1e-8),
             ("N=1000", 1000, 1e-8),
             ("N=2000", 2000, 1e-9)]
-        freqs, _ = NAFF.naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
+        freqs, _ = naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
         @test abs(freqs[1,1] - f_true) < tol
     end
 
     @testset "power-of-2 N=$N: |Δf| < 1e-6" for N in [64, 128, 256, 512, 1024]
-        freqs, _ = NAFF.naff(reshape(tone(0.173205, 1.0+0im, N), 1, :), 1)
+        freqs, _ = naff(reshape(tone(0.173205, 1.0+0im, N), 1, :), 1)
         @test abs(freqs[1,1] - 0.173205) < 1e-6
     end
 
     @testset "accuracy improves with N: N=2000 more accurate than N=100" begin
-        err_small = abs(NAFF.naff(reshape(tone(f_true,1.0+0im,100),  1,:), 1)[1][1,1] - f_true)
-        err_large = abs(NAFF.naff(reshape(tone(f_true,1.0+0im,2000), 1,:), 1)[1][1,1] - f_true)
+        err_small = abs(naff(reshape(tone(f_true,1.0+0im,100),  1,:), 1)[1][1,1] - f_true)
+        err_large = abs(naff(reshape(tone(f_true,1.0+0im,2000), 1,:), 1)[1][1,1] - f_true)
         @test err_large < err_small
     end
 
     @testset "N not a multiple of (turns+1): truncation transparent to caller" begin
         for N in [100, 200, 333, 500, 997, 1001]
-            freqs, _ = NAFF.naff(reshape(tone(0.17, 1.0+0im, N), 1, :), 1)
+            freqs, _ = naff(reshape(tone(0.17, 1.0+0im, N), 1, :), 1)
             @test abs(freqs[1,1] - 0.17) < 1e-5
         end
     end
@@ -354,21 +354,21 @@ end # E
             ("f=0.45",  0.45,   1e-8),
             ("f=0.48",  0.48,   1e-8),
             ("f=0.499", 0.499,  1e-7)]
-        freqs, _ = NAFF.naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
+        freqs, _ = naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
         @test abs(freqs[1,1] - f_true) < tol
     end
 
     @testset "irrational f≈$(round(f_true,digits=5)): |Δf| < 1e-9" for f_true in [
             sqrt(2)/10, sqrt(3)/10, sqrt(5)/10, sqrt(7)/10,
             exp(1)/7,   exp(1)/10,  π/10,       π/12]
-        freqs, _ = NAFF.naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
+        freqs, _ = naff(reshape(tone(f_true, 1.0+0im, N), 1, :), 1)
         @test abs(freqs[1,1] - f_true) < 1e-9
     end
 
     @testset "negative-frequency tone returns negative frequency" begin
         f_true = -0.2
         sig    = exp.(im .* 2π .* f_true .* (0:N-1))
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 1)
+        freqs, _ = naff(reshape(sig, 1, :), 1)
         @test abs(freqs[1,1] - f_true) < 1e-8
     end
 
@@ -379,15 +379,15 @@ end # F
 
     @testset "two calls with same 1-row matrix give identical results" begin
         N = 1000; mat = reshape(tone(0.2731, 1.0+0im, N), 1, N)
-        f1b, _ = NAFF.naff(mat, 1)
-        f2b, _ = NAFF.naff(mat, 1)
+        f1b, _ = naff(mat, 1)
+        f2b, _ = naff(mat, 1)
         @test f1b[1,1] == f2b[1,1]
     end
 
     @testset "two identical rows give identical results" begin
         N = 800; sig = tone(0.314, 1.0+0im, N)
         batch = vcat(reshape(sig,1,N), reshape(sig,1,N))
-        freqs, amps = NAFF.naff(batch, 1)
+        freqs, amps = naff(batch, 1)
         @test freqs[1,1] == freqs[2,1]
         @test amps[1,1]  == amps[2,1]
     end
@@ -396,14 +396,14 @@ end # F
         N        = 1000
         f_truths = [0.10, 0.17, 0.25, 0.33, 0.41]
         batch    = vcat([reshape(tone(f, 1.0+0im, N), 1, N) for f in f_truths]...)
-        freqs, _ = NAFF.naff(batch, 1)
+        freqs, _ = naff(batch, 1)
         @test maximum(abs.(vec(freqs[:,1]) .- f_truths)) < 1e-8
     end
 
     @testset "20-row batch: shape (20,1) and all |Δf| < 1e-8" begin
         N = 500; f_true = 0.237
         batch = vcat([reshape(tone(f_true, exp(im*k*0.3), N), 1, N) for k in 0:19]...)
-        freqs, amps = NAFF.naff(batch, 1)
+        freqs, amps = naff(batch, 1)
         @test size(freqs) == (20, 1)
         @test size(amps)  == (20, 1)
         @test maximum(abs.(vec(freqs[:,1]) .- f_true)) < 1e-8
@@ -413,7 +413,7 @@ end # F
         N     = 300
         batch = vcat([reshape(tone(0.1 + mod(k,5)*0.07, 1.0+0im, N), 1, N)
                       for k in 0:99]...)
-        freqs, _ = NAFF.naff(batch, 1)
+        freqs, _ = naff(batch, 1)
         @test size(freqs) == (100, 1)
         @test all(0.0 .< freqs[:,1] .< 0.5)
     end
@@ -422,8 +422,8 @@ end # F
         N        = 1000
         f_truths = [0.15, 0.27, 0.39]
         batch    = vcat([reshape(tone(f, 1.0+0im, N), 1, N) for f in f_truths]...)
-        freqs_b, _ = NAFF.naff(batch, 1)
-        freqs_s, _ = NAFF.naff(reshape(tone(f_truths[i], 1.0+0im, N), 1, N), 1)
+        freqs_b, _ = naff(batch, 1)
+        freqs_s, _ = naff(reshape(tone(f_truths[i], 1.0+0im, N), 1, N), 1)
         @test freqs_b[i,1] == freqs_s[1,1]
     end
 
@@ -439,7 +439,7 @@ end # G
         Bs  = [0.5+0im, 0.6-0.1im, 0.4+0.4im]
         batch = vcat([reshape(tone(fa,A,N).+tone(fb,B,N), 1, N)
                       for (fa,fb,A,B) in zip(f1s,f2s,As,Bs)]...)
-        freqs, _ = NAFF.naff(batch, 2)
+        freqs, _ = naff(batch, 2)
         @test size(freqs) == (3, 2)
         @test all(1:3) do i
             maximum(abs.(sort(vec(freqs[i,:])) .- sort([f1s[i],f2s[i]]))) < 1e-7
@@ -455,7 +455,7 @@ end # G
                   [2.2+0im,0.7-0.2im,0.3+0im]]
         batch = vcat([reshape(sum(tone(f,A,N) for (f,A) in zip(fs,as_)), 1, N)
                       for (fs,as_) in zip(f_sets,A_sets)]...)
-        freqs, _ = NAFF.naff(batch, 3)
+        freqs, _ = naff(batch, 3)
         @test size(freqs) == (5, 3)
         @test all(1:5) do i
             maximum(abs.(sort(vec(freqs[i,:])) .- sort(f_sets[i]))) < 1e-6
@@ -466,8 +466,8 @@ end # G
         N   = 1500
         sig = tone(0.15, 2.0+0im, N) .+ tone(0.33, 1.0+0im, N)
         mat = reshape(sig, 1, N)
-        f1b, _ = NAFF.naff(mat, 1)
-        f2b, _ = NAFF.naff(mat, 2)
+        f1b, _ = naff(mat, 1)
+        f2b, _ = naff(mat, 2)
         @test f1b[1,1] == f2b[1,1]
     end
 
@@ -476,8 +476,8 @@ end # G
         comps = [(0.12, 2.0+0im), (0.27, 1.0+0im), (0.39, 0.5+0im)]
         sig   = sum(tone(f, A, N) for (f, A) in comps)
         mat   = reshape(sig, 1, N)
-        f1b, _ = NAFF.naff(mat, 1)
-        f3b, _ = NAFF.naff(mat, 3)
+        f1b, _ = naff(mat, 1)
+        f3b, _ = naff(mat, 3)
         @test f1b[1,1] == f3b[1,1]
     end
 
@@ -485,7 +485,7 @@ end # G
         N        = 1000
         f_truths = [0.15, 0.33]
         batch    = vcat([reshape(tone(f, 1.0+0im, N), 1, N) for f in f_truths]...)
-        freqs, _ = NAFF.naff(batch, 1; window_order=p)
+        freqs, _ = naff(batch, 1; window_order=p)
         @test maximum(abs.(vec(freqs[:,1]) .- f_truths)) < 1e-7
     end
 
@@ -498,7 +498,7 @@ end # H
         N        = 1000; f_true = 0.25
         A_truths = [1.0+0.0im, 0.0+1.0im, -1.0+0.0im, 0.5+0.5im, 2.0-1.5im]
         batch    = vcat([reshape(tone(f_true, A, N), 1, N) for A in A_truths]...)
-        _, amps  = NAFF.naff(batch, 1)
+        _, amps  = naff(batch, 1)
         @test all(i -> abs(amps[i,1]-A_truths[i])/abs(A_truths[i]) < 1e-4,
                   1:length(A_truths))
     end
@@ -507,7 +507,7 @@ end # H
         N      = 1000; f_true = 0.2
         phases = range(0, 2π - 2π/8, length=8)
         batch  = vcat([reshape(tone(f_true, exp(im*φ), N), 1, N) for φ in phases]...)
-        _, amps = NAFF.naff(batch, 1)
+        _, amps = naff(batch, 1)
         @test all(i -> abs(mod(angle(amps[i,1])-phases[i]+π, 2π)-π) < 1e-4, 1:8)
     end
 
@@ -515,7 +515,7 @@ end # H
         N      = 1000; f_true = 0.3
         scales = [0.1, 1.0, 10.0, 100.0]
         batch  = vcat([reshape(tone(f_true, s*(1.0+0im), N), 1, N) for s in scales]...)
-        _, amps = NAFF.naff(batch, 1)
+        _, amps = naff(batch, 1)
         ratios = [abs(amps[i,1])/scales[i] for i in 1:length(scales)]
         @test maximum(abs.(ratios .- ratios[1])) < 1e-4
     end
@@ -524,9 +524,9 @@ end # H
         N        = 1000; f_true = 0.25
         A_truths = [1.0+0.0im, 2.0-1.0im, 0.5+0.5im]
         batch    = vcat([reshape(tone(f_true, A, N), 1, N) for A in A_truths]...)
-        _, amps_batch = NAFF.naff(batch, 1)
+        _, amps_batch = naff(batch, 1)
         for (i, A) in enumerate(A_truths)
-            _, amps_single = NAFF.naff(reshape(tone(f_true, A, N), 1, N), 1)
+            _, amps_single = naff(reshape(tone(f_true, A, N), 1, N), 1)
             @test amps_batch[i,1] == amps_single[1,1]
         end
     end
@@ -542,14 +542,14 @@ end # I
     A_truths = exp.(im .* 2π .* rand(rng, nrows))
     batch    = vcat([reshape(tone(f, A, N), 1, N)
                      for (f, A) in zip(f_truths, A_truths)]...)
-    freqs_b, _ = NAFF.naff(batch, 1)
+    freqs_b, _ = naff(batch, 1)
 
     @testset "10 heterogeneous rows: all |Δf| < 1e-7" begin
         @test maximum(abs.(vec(freqs_b[:,1]) .- f_truths)) < 1e-7
     end
 
     @testset "reversing row order gives reversed-order results" begin
-        freqs_rev, _ = NAFF.naff(batch[end:-1:1, :], 1)
+        freqs_rev, _ = naff(batch[end:-1:1, :], 1)
         @test maximum(abs.(vec(freqs_rev[:,1]) .- reverse(vec(freqs_b[:,1])))) < 1e-15
     end
 
@@ -559,14 +559,14 @@ end # I
         f_weak = [0.20, 0.30, 0.10, 0.40, 0.15, 0.35]
         batch2 = vcat([reshape(tone(fd,2.0+0im,N2).+tone(fw,0.5+0im,N2), 1, N2)
                        for (fd, fw) in zip(f_dom, f_weak)]...)
-        freqs2, _ = NAFF.naff(batch2, 2)
+        freqs2, _ = naff(batch2, 2)
         @test all(1:6) do i
             maximum(abs.(sort(vec(freqs2[i,:])) .- sort([f_dom[i],f_weak[i]]))) < 1e-7
         end
     end
 
     @testset "batch matches individual call for row $i" for i in 1:nrows
-        freqs_s, _ = NAFF.naff(reshape(batch[i,:], 1, N), 1)
+        freqs_s, _ = naff(reshape(batch[i,:], 1, N), 1)
         @test freqs_b[i,1] == freqs_s[1,1]
     end
 
@@ -585,7 +585,7 @@ end # J
 
     batch  = vcat([reshape(sum(tone(f,A,N) for (f,A) in zip(fs,as_)), 1, N)
                    for (fs, as_) in zip(f_sets, A_sets)]...)
-    freqs_b, _ = NAFF.naff(batch, nterms)
+    freqs_b, _ = naff(batch, nterms)
 
     @testset "result shape is (100, 3)" begin
         @test size(freqs_b) == (100, 3)
@@ -608,19 +608,19 @@ end # K
 
     @testset "N=$N (arbitrary N): result in (0,0.5) and |Δf| < 1e-5" for N in [
             100, 200, 333, 500, 999, 1001]
-        freqs, _ = NAFF.naff(reshape(tone(0.17, 1.0+0im, N), 1, N), 1)
+        freqs, _ = naff(reshape(tone(0.17, 1.0+0im, N), 1, N), 1)
         @test 0.0 < freqs[1,1] < 0.5
         @test abs(freqs[1,1] - 0.17) < 1e-5
     end
 
     @testset "N=13 (very short): result in (0, 0.5)" begin
-        freqs, _ = NAFF.naff(reshape(tone(0.2, 1.0+0im, 13), 1, 13), 1)
+        freqs, _ = naff(reshape(tone(0.2, 1.0+0im, 13), 1, 13), 1)
         @test 0.0 < freqs[1,1] < 0.5
     end
 
     @testset "50-row × N=100: shape (50,1) and all |Δf| < 1e-5" begin
         batch   = vcat([reshape(tone(0.25, 1.0+0im, 100), 1, 100) for _ in 1:50]...)
-        freqs, amps = NAFF.naff(batch, 1)
+        freqs, amps = naff(batch, 1)
         @test size(freqs) == (50, 1)
         @test size(amps)  == (50, 1)
         @test maximum(abs.(vec(freqs[:,1]) .- 0.25)) < 1e-5
@@ -628,13 +628,13 @@ end # K
 
     @testset "n_terms=2, single tone: second amplitude ≪ first" begin
         mat = reshape(tone(0.2, 1.0+0im, 1000), 1, 1000)
-        _, amps = NAFF.naff(mat, 2)
+        _, amps = naff(mat, 2)
         @test abs(amps[1,2]) < 1e-3 * abs(amps[1,1])
     end
 
     @testset "n_terms=3, single tone: 2nd and 3rd amplitudes ≪ first" begin
         mat = reshape(tone(0.3, 1.0+0im, 1000), 1, 1000)
-        _, amps = NAFF.naff(mat, 3)
+        _, amps = naff(mat, 3)
         @test abs(amps[1,2]) < 1e-2 * abs(amps[1,1])
         @test abs(amps[1,3]) < 1e-2 * abs(amps[1,1])
     end
@@ -647,7 +647,7 @@ end # L
     @testset "Δf=10/N: both tones separated and both |Δf| < 1e-6" begin
         N = 3000; fa = 0.200; fb = fa + 10/N
         sig = tone(fa, 1.0+0im, N) .+ tone(fb, 0.9+0im, N)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, _ = naff(reshape(sig, 1, :), 2)
         fs_s = sort(vec(freqs[1,:]))
         @test fs_s[1] < (fa+fb)/2 && fs_s[2] > (fa+fb)/2
         @test maximum(abs.(fs_s .- [fa, fb])) < 1e-6
@@ -656,7 +656,7 @@ end # L
     @testset "Δf=5/N: both tones separated and both |Δf| < 1e-5" begin
         N = 3000; fa = 0.200; fb = fa + 5/N
         sig = tone(fa, 1.0+0im, N) .+ tone(fb, 0.9+0im, N)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, _ = naff(reshape(sig, 1, :), 2)
         fs_s = sort(vec(freqs[1,:]))
         @test fs_s[1] < (fa+fb)/2 && fs_s[2] > (fa+fb)/2
         @test maximum(abs.(fs_s .- [fa, fb])) < 1e-5
@@ -665,7 +665,7 @@ end # L
     @testset "Δf=3/N: both tones separated and second |Δf| < 1e-5" begin
         N = 3000; fa = 0.200; fb = fa + 3/N
         sig = tone(fa, 1.0+0im, N) .+ tone(fb, 0.9+0im, N)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, _ = naff(reshape(sig, 1, :), 2)
         fs_s = sort(vec(freqs[1,:]))
         @test fs_s[1] < (fa+fb)/2 && fs_s[2] > (fa+fb)/2
         @test abs(fs_s[2] - fb) < 1e-5
@@ -675,7 +675,7 @@ end # L
         N = 3000; fa = 0.25; fb = fa + 5/N
         batch = vcat([reshape(tone(fa,exp(im*k),N).+tone(fb,0.9*exp(im*k),N), 1, N)
                       for k in 0:4]...)
-        freqs, _ = NAFF.naff(batch, 2)
+        freqs, _ = naff(batch, 2)
         @test all(1:5) do i
             fs_i = sort(vec(freqs[i,:]))
             fs_i[1] < (fa+fb)/2 && fs_i[2] > (fa+fb)/2
@@ -685,7 +685,7 @@ end # L
     @testset "unequal amplitudes (10:1 ratio): weaker tone still recovered at Δf=5/N" begin
         N = 3000; fa = 0.200; fb = fa + 5/N
         sig = tone(fa, 1.0+0im, N) .+ tone(fb, 0.1+0im, N)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, _ = naff(reshape(sig, 1, :), 2)
         fs_s = sort(vec(freqs[1,:]))
         @test fs_s[1] < (fa+fb)/2 && fs_s[2] > (fa+fb)/2
     end
@@ -703,20 +703,20 @@ end # M
         # noise realisation on newer versions.  The algorithm is correct in all
         # cases; the looser bound keeps the test green across Julia versions.
         sig = tone(0.271828, 100.0+0im, 2000) .+ randn(rng, ComplexF64, 2000)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 1)
+        freqs, _ = naff(reshape(sig, 1, :), 1)
         @test abs(freqs[1,1] - 0.271828) < 5e-7
     end
 
     @testset "SNR~20dB: |Δf| < 1e-5" begin
         sig = tone(0.314159, 10.0+0im, 2000) .+ randn(rng, ComplexF64, 2000)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 1)
+        freqs, _ = naff(reshape(sig, 1, :), 1)
         @test abs(freqs[1,1] - 0.314159) < 1e-5
     end
 
     @testset "SNR~10dB: result within 2 bins of true frequency" begin
         N = 2000; f_true = 0.25
         sig = tone(f_true, 3.162+0im, N) .+ randn(rng, ComplexF64, N)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 1)
+        freqs, _ = naff(reshape(sig, 1, :), 1)
         @test abs(freqs[1,1] - f_true) < 2/N
     end
 
@@ -724,7 +724,7 @@ end # M
         f_truths = 0.1 .+ 0.04 .* (0:9)
         batch    = vcat([reshape(tone(f, 100.0+0im, 2000) .+ randn(rng, ComplexF64, 2000),
                                  1, 2000) for f in f_truths]...)
-        freqs, _ = NAFF.naff(batch, 1)
+        freqs, _ = naff(batch, 1)
         @test maximum(abs.(vec(freqs[:,1]) .- f_truths)) < 1e-6
     end
 
@@ -732,7 +732,7 @@ end # M
         N = 2000; fa, fb = 0.15, 0.35
         sig = tone(fa, 100.0+0im, N) .+ tone(fb, 80.0+0im, N) .+
               randn(rng, ComplexF64, N)
-        freqs, _ = NAFF.naff(reshape(sig, 1, :), 2)
+        freqs, _ = naff(reshape(sig, 1, :), 2)
         @test maximum(abs.(sort(vec(freqs[1,:])) .- [fa, fb])) < 1e-5
     end
 
@@ -744,8 +744,8 @@ end # N
     @testset "identical inputs give bit-identical outputs" begin
         N   = 1000; f_true = sqrt(2)/10
         mat = reshape(tone(f_true, 1.5-0.7im, N), 1, N)
-        f1b, a1 = NAFF.naff(mat, 2; window_order=2)
-        f2b, a2 = NAFF.naff(mat, 2; window_order=2)
+        f1b, a1 = naff(mat, 2; window_order=2)
+        f2b, a2 = naff(mat, 2; window_order=2)
         @test f1b == f2b
         @test a1  == a2
     end
@@ -754,9 +754,9 @@ end # N
         N    = 1000
         sigs = [tone(f, 1.0+0im, N) for f in [0.15, 0.27, 0.39]]
         batch = vcat([reshape(s, 1, N) for s in sigs]...)
-        freqs_batch, amps_batch = NAFF.naff(batch, 1)
+        freqs_batch, amps_batch = naff(batch, 1)
         for i in 1:3
-            freqs_s, amps_s = NAFF.naff(reshape(sigs[i], 1, N), 1)
+            freqs_s, amps_s = naff(reshape(sigs[i], 1, N), 1)
             @test freqs_batch[i,1] == freqs_s[1,1]
             @test amps_batch[i,1]  == amps_s[1,1]
         end
@@ -789,9 +789,9 @@ end # NAFF (top-level testset)
 
     # Calls to test — cover the three public entry-point forms
     calls = [
-        ("Matrix{ComplexF64}, n=1",            () -> NAFF.naff(mat64, 1)),
-        ("Matrix{ComplexF64}, n=2, window=2",  () -> NAFF.naff(mat64, 2; window_order=2)),
-        ("Matrix{ComplexF32}, n=1",            () -> NAFF.naff(mat32, 1)),
+        ("Matrix{ComplexF64}, n=1",            () -> naff(mat64, 1)),
+        ("Matrix{ComplexF64}, n=2, window=2",  () -> naff(mat64, 2; window_order=2)),
+        ("Matrix{ComplexF32}, n=1",            () -> naff(mat32, 1)),
     ]
 
     @testset "$label" for (label, call) in calls
@@ -822,7 +822,7 @@ let
         signal .+= A .* exp.(im .* 2π .* f .* t)
     end
 
-    freqs_raw, amps = NAFF.naff(reshape(signal, 1, :), 4)
+    freqs_raw, amps = naff(reshape(signal, 1, :), 4)
     idx        = sortperm(vec(freqs_raw[1,:]))
     freqs_s    = freqs_raw[1, idx]
     amps_s     = amps[1, idx]

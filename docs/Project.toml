@@ -1,3 +1,3 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-NAFF = "33907ca8-b329-4b9f-877b-c71d0f37dbeb"
+QuasiperiodicFrequencies = "33907ca8-b329-4b9f-877b-c71d0f37dbeb"

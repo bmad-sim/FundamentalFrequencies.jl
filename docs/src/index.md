@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = NAFF
+CurrentModule = QuasiperiodicFrequencies
 ```
 
-# NAFF
+# QuasiperiodicFrequencies
 
-Documentation for [NAFF](https://github.com/mattsignorelli/NAFF.jl).
+Documentation for [QuasiperiodicFrequencies](https://github.com/bmad-sim/QuasiperiodicFrequencies.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [NAFF]
+Modules = [QuasiperiodicFrequencies]
 ```
