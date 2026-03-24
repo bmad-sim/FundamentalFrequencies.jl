@@ -42,7 +42,7 @@ Test groups
 
 using Test
 using CUDA
-using QuasiperiodicFrequencies
+using FundamentalFrequencies
 using Printf, Random, Statistics, LinearAlgebra
 
 # Skip the whole file gracefully if no GPU is available

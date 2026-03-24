@@ -1,17 +1,17 @@
-# QuasiperiodicFrequencies
+# FundamentalFrequencies
 
-[![Build Status](https://github.com/bmad-sim/QuasiperiodicFrequencies.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/bmad-sim/QuasiperiodicFrequencies.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://github.com/bmad-sim/FundamentalFrequencies.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/bmad-sim/FundamentalFrequencies.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
 This package provides a Julia implementation of the [Numerical Analysis of Fundamental Frequencies (NAFF) method by J. Laskar](https://www.sciencedirect.com/science/article/pii/016727899290028L) to compute fundamental frequencies of quasi-periodic systems to high precision. The evolution of the fundamental frequencies with time can be used to measure chaos. Some papers of interest:
 
 - [The chaotic motion of the solar system: A numerical estimate of the size of the chaotic zones](https://www.sciencedirect.com/science/article/pii/001910359090084M)
 - [Application of Frequency Map Analysis to the ALS](https://cds.cern.ch/record/301630/files/p183.pdf)
 
-`QuasiperiodicFrequencies.jl` in particular is implemented in a branchless and vectorized way for GPU-accelerated, batched NAFF. With this package, one can do NAFF on e.g. a million particles in parallel on a GPU. While this was initially developed for the [SciBmad accelerator physics code](https://github.com/bmad-sim/SciBmad.jl), the tools developed here may be useful to a much broader audience.
+`FundamentalFrequencies.jl` in particular is implemented in a branchless and vectorized way for GPU-accelerated, batched NAFF. With this package, one can do NAFF on e.g. a million particles in parallel on a GPU. While this was initially developed for the [SciBmad accelerator physics code](https://github.com/bmad-sim/SciBmad.jl), the tools developed here may be useful to a much broader audience.
 
 ## Usage
 
-`QuasiperiodicFrequencies.jl` exports a single function `naff`:
+`FundamentalFrequencies.jl` exports a single function `naff`:
 ```
     naff(data::AbstractMatrix, n_frequencies=1; window_order=1) -> (frequencies, amplitudes)
 
@@ -31,7 +31,7 @@ to the signal in order to gain a more accurate computation of the frequencies.
                 amplitudes associated with each frequency
 ```
 
-For GPU usage, simply let `data` be a GPU array (e.g. `CuArray`). Note that the GPU backend must have implemented `AbstractFFTs.fft` in order to work on the GPU. At the time of this commit, `QuasiperiodicFrequencies.jl` is confirmed to work on NVIDIA GPUs with CUDA. See the `cuda-test.jl` file in the `test` directory.
+For GPU usage, simply let `data` be a GPU array (e.g. `CuArray`). Note that the GPU backend must have implemented `AbstractFFTs.fft` in order to work on the GPU. At the time of this commit, `FundamentalFrequencies.jl` is confirmed to work on NVIDIA GPUs with CUDA. See the `cuda-test.jl` file in the `test` directory.
 
 ## Other NAFF Codes/Acknowledgements
 

@@ -62,7 +62,7 @@ Test groups
 """
 
 using Test
-using QuasiperiodicFrequencies
+using FundamentalFrequencies
 using Printf, LinearAlgebra, Random, Statistics, JET
 # JET is loaded inside testset P so the rest of the suite runs even if it is
 # not installed. Add JET to [extras] / [targets] in Project.toml to enable.

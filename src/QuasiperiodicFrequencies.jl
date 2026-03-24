@@ -1,4 +1,4 @@
-module QuasiperiodicFrequencies
+module FundamentalFrequencies
 using FFTW, LinearAlgebra
 export naff
 
@@ -12,15 +12,18 @@ to the signal in order to gain a more accurate computation of the frequencies.
 
 # Arguments
 - `data::AbstractMatrix`: a matrix of size `num_signals x n_samples` to do NAFF on
-- `n_frequencies`: number of frequencies to compute with NAFF
-- `window_order`: order of the Hanning window applied to the signal throughout NAFF
+- `n_frequencies = 1`: number of frequencies to compute with NAFF
+
+# Keyword Arguments
+- `window_order = 1`: order of the Hanning window applied to the signal throughout NAFF
+- `warnings = true`: display warnings
 
 # Output
 - `frequencies`: a matrix of size `num_signals x n_frequencies` containing the frequencies
 - `amplitudes`: a matrix of size `num_signals x n_frequencies` containing the complex 
                 amplitudes associated with each frequency
 """
-function naff(data::AbstractMatrix, n_frequencies=1; window_order=1)
+function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=true)
   n_particles = size(data, 1)
   turns = size(data, 2) - 1 
   numtype = real(eltype(data))
@@ -65,7 +68,7 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1)
     idx_max = map(x->x[2], idx_max)
 
     # check if peak is at DC (k=1)
-    if any(idx_max .== 1)
+    if warnings && any(idx_max .== 1)
       dc_signals = findall(idx_max .== 1)
       @warn "Peak at DC detected for signals $(dc_signals): did you remove the mean?"
     end

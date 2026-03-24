@@ -67,6 +67,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using QuasiperiodicFrequencies
-          DocMeta.setdocmeta!(QuasiperiodicFrequencies, :DocTestSetup, :(using QuasiperiodicFrequencies); recursive=true)
-          doctest(QuasiperiodicFrequencies)
+          using FundamentalFrequencies
+          DocMeta.setdocmeta!(FundamentalFrequencies, :DocTestSetup, :(using FundamentalFrequencies); recursive=true)
+          doctest(FundamentalFrequencies)

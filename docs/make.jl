@@ -1,14 +1,14 @@
-using QuasiperiodicFrequencies
+using FundamentalFrequencies
 using Documenter
 
-DocMeta.setdocmeta!(QuasiperiodicFrequencies, :DocTestSetup, :(using QuasiperiodicFrequencies); recursive=true)
+DocMeta.setdocmeta!(FundamentalFrequencies, :DocTestSetup, :(using FundamentalFrequencies); recursive=true)
 
 makedocs(;
-    modules=[QuasiperiodicFrequencies],
+    modules=[FundamentalFrequencies],
     authors="mattsignorelli <mgs255@cornell.edu> and contributors",
-    sitename="QuasiperiodicFrequencies.jl",
+    sitename="FundamentalFrequencies.jl",
     format=Documenter.HTML(;
-        canonical="https://bmad-sim.github.io/QuasiperiodicFrequencies.jl",
+        canonical="https://bmad-sim.github.io/FundamentalFrequencies.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -18,6 +18,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/bmad-sim/QuasiperiodicFrequencies.jl",
+    repo="github.com/bmad-sim/FundamentalFrequencies.jl",
     devbranch="main",
 )

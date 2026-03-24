@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = QuasiperiodicFrequencies
+CurrentModule = FundamentalFrequencies
 ```
 
-# QuasiperiodicFrequencies
+# FundamentalFrequencies
 
-Documentation for [QuasiperiodicFrequencies](https://github.com/bmad-sim/QuasiperiodicFrequencies.jl).
+Documentation for [FundamentalFrequencies](https://github.com/bmad-sim/FundamentalFrequencies.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [QuasiperiodicFrequencies]
+Modules = [FundamentalFrequencies]
 ```
