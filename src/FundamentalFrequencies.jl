@@ -25,7 +25,7 @@ to the signal in order to gain a more accurate computation of the frequencies.
 """
 function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=true)
   n_particles = size(data, 1)
-  turns = size(data, 2) - 1 
+  turns = 6*div(size(data, 2) - 1, 6)
   numtype = real(eltype(data))
 
   # Construct Hanning window chi
@@ -34,7 +34,10 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
   copyto!(chi, t)
 
   # Construct array to store current signal residual
-  signal_res = complex(copy(data))
+  signal_res = complex(copy(view(data, :, 1:(turns+1))))
+
+  # Store array of Newton-Cotes weights for integral
+  weights = newton_cotes_weights(signal_res)
 
   # FFT frequency resolution
   f_resolution = 1/turns 
@@ -50,7 +53,9 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
   fill!(amplitudes, 0)
 
   # Utility function to compute inner product
-  inner_prod(f,g) = sum(@.(f * chi' * conj(g)), dims=2) ./ turns
+  #inner_prod(f,g) = sum(@.(f * chi' * conj(g)), dims=2) ./ turns
+
+  inner_prod(f,g) = integrate(@.(1 / turns * f * chi' * conj(g)), weights)
 
   # Now we can start the NAFF loop
   for i in 1:n_frequencies
@@ -97,6 +102,33 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
     signal_res .-= view(amplitudes, :, i) .* view(U, :, :, i)
   end
   return frequencies, amplitudes
+end
+
+# Construction of this should be done once and passed along
+function newton_cotes_weights(integrand)
+  N = size(integrand, 2)
+  @assert rem(N-1, 6) == 0 "newton_cotes_weights only works for arrays with length-1 = multiple of six"
+  
+  # Initialize first on CPU
+  weights = zeros(eltype(integrand), N)
+  K = div(N-1,6)
+
+  weights[1:6] .= [41, 216, 27, 272, 27, 216]
+
+  pattern = [82, 216, 27, 272, 27, 216]
+  weights[7:6*K] .= repeat(pattern, K-1)
+  weights[end] = 41
+
+  # Now copy result to device
+  weights_device = similar(integrand, N)
+  copyto!(weights_device, weights)
+
+  return weights_device
+end
+
+function integrate(integrand::AbstractMatrix, weights=newton_cotes_weights(size(integrand, 2)))
+  @assert size(integrand, 2) == length(weights) "Sizes of weights and integrand arrays do not match"
+  return (integrand * weights) ./ 140
 end
 
 include("brentb.jl")
