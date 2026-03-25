@@ -55,7 +55,7 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
 
   # Utility function to compute inner product
   # Dot product:
-  inner_prod(f,g) = sum(@.(f * chi' * conj(g)), dims=2) ./ turns=
+  inner_prod(f,g) = sum(@.(f * chi' * conj(g)), dims=2) ./ turns
   # Newton Cotes
   #inner_prod(f,g) = integrate(@.(1 / turns * f * chi' * conj(g)), weights)
 
