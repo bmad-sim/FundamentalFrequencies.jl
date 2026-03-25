@@ -25,7 +25,8 @@ to the signal in order to gain a more accurate computation of the frequencies.
 """
 function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=true)
   n_particles = size(data, 1)
-  turns = 6*div(size(data, 2) - 1, 6)
+  turns = size(data, 2)-1
+  #turns = 6*div(size(data, 2) - 1, 6)
   numtype = real(eltype(data))
 
   # Construct Hanning window chi
@@ -36,8 +37,8 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
   # Construct array to store current signal residual
   signal_res = complex(copy(view(data, :, 1:(turns+1))))
 
-  # Store array of Newton-Cotes weights for integral
-  weights = newton_cotes_weights(signal_res)
+  # If newton-cotes, store array of Newton-Cotes weights for integral
+  # weights = newton_cotes_weights(signal_res)
 
   # FFT frequency resolution
   f_resolution = 1/turns 
@@ -53,9 +54,10 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
   fill!(amplitudes, 0)
 
   # Utility function to compute inner product
-  #inner_prod(f,g) = sum(@.(f * chi' * conj(g)), dims=2) ./ turns
-
-  inner_prod(f,g) = integrate(@.(1 / turns * f * chi' * conj(g)), weights)
+  # Dot product:
+  inner_prod(f,g) = sum(@.(f * chi' * conj(g)), dims=2) ./ turns=
+  # Newton Cotes
+  #inner_prod(f,g) = integrate(@.(1 / turns * f * chi' * conj(g)), weights)
 
   # Now we can start the NAFF loop
   for i in 1:n_frequencies
