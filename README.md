@@ -39,6 +39,8 @@ For GPU usage, simply let `data` be a GPU array (e.g. `CuArray`). Note that the 
 
 [`NAFF_UV`](https://github.com/kskoufar/NAFF_UV): a Fortran 2008 implementation of NAFF with additional features and window choices
 
+[`nafflib`](https://github.com/xsuite/nafflib): a modernized Python implementation of NAFF
+
 [`PyNAFF`](https://github.com/nkarast/PyNAFF): a Python implementation of NAFF
 
 In particular, I acknowledge the authors of `FortNAFF` and `NAFF_UV`, Michael Ehrlichman and Kyriacos Skoufaris respectively, for providing easiest-to-understand and modern NAFF implementations.
