@@ -23,7 +23,7 @@ to the signal in order to gain a more accurate computation of the frequencies.
 - `amplitudes`: a matrix of size `num_signals x n_frequencies` containing the complex 
                 amplitudes associated with each frequency
 """
-function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=true)
+function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=true, tol=1e-4)
   n_particles = size(data, 1)
   turns = size(data, 2)-1
   #turns = 6*div(size(data, 2) - 1, 6)
@@ -48,10 +48,12 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
   U = similar(data, complex(eltype(data)), (n_particles, turns+1, n_frequencies))
   frequencies = similar(data, real(eltype(data)), (n_particles, n_frequencies))
   amplitudes = similar(data, complex(eltype(data)), (n_particles, n_frequencies))
+  good = similar(data, Bool, n_particles)
 
   fill!(U, 0)
   fill!(frequencies, 0)
   fill!(amplitudes, 0)
+  fill!(good, true)
 
   # Utility function to compute inner product
   # Dot product:
@@ -93,15 +95,22 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
       return abs.(inner_prod(signal_res, @.(exp(2 * pi * im * (0:turns)' * x))))
     end
 
+    # 6) If not first iteration, check if this frequency is a duplicate
+    if i != 1
+      # Find column in frequencies array where there is the closest match
+      dmin, __ = findmin(abs.(view(frequencies, :, 1:(i-1)) .- cur_frequency))
+      @. good = ifelse(dmin < f_resolution, false, true)
+    end
+
     @. frequencies[:,i] = cur_frequency
 
     # Do MGS:
-    @. U[:,:,i] = exp(2 * pi * im * (0:turns)' * cur_frequency)
+    U[:,:,i] .= ifelse.(good, exp.(2 .* pi .* im .* (0:turns)' .* cur_frequency), zero(eltype(U)))
     for j in 1:i-1
-      U[:,:,i] .-= inner_prod(view(U, :, :, j), view(U, :, :, i)) .* view(U, :, :, j) 
+      U[:,:,i] .-= ifelse.(good, inner_prod(view(U, :, :, j), view(U, :, :, i)) .* view(U, :, :, j) , zero(eltype(U)))
     end
-    amplitudes[:,i] .= inner_prod(signal_res, view(U, :, :, i))
-    signal_res .-= view(amplitudes, :, i) .* view(U, :, :, i)
+    amplitudes[:,i] .= ifelse.(good, inner_prod(signal_res, view(U, :, :, i)), zero(eltype(amplitudes)))
+    signal_res .-= ifelse.(good, view(amplitudes, :, i) .* view(U, :, :, i), zero(eltype(signal_res)))
   end
   return frequencies, amplitudes
 end
