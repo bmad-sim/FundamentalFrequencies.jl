@@ -1,5 +1,5 @@
 module FundamentalFrequencies
-using FFTW, LinearAlgebra
+using BatchSolve, FFTW, LinearAlgebra
 export naff
 
 """
@@ -91,9 +91,10 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
 
     # 5) Now we need to vary our guess until the inner product 
     # is maximized. This is done using Brent's method
-    cur_frequency, __, __ = brentb(guess .- f_resolution/2 , guess .+ f_resolution/2) do x
-      return abs.(inner_prod(signal_res, @.(exp(2 * pi * im * (0:turns)' * x))))
+    sol = brent(guess; xa=(guess .- f_resolution/2), xb=(guess .+ f_resolution/2)) do x
+      return -abs.(inner_prod(signal_res, @.(exp(2 * pi * im * (0:turns)' * x))))
     end
+    cur_frequency = sol.u
 
     # 6) If not first iteration, check if this frequency is a duplicate
     if i != 1
@@ -141,7 +142,5 @@ function integrate(integrand::AbstractMatrix, weights=newton_cotes_weights(size(
   @assert size(integrand, 2) == length(weights) "Sizes of weights and integrand arrays do not match"
   return (integrand * weights) ./ 140
 end
-
-include("brentb.jl")
 
 end
