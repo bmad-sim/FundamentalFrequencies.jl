@@ -99,7 +99,7 @@ function naff(data::AbstractMatrix, n_frequencies=1; window_order=1, warnings=tr
     # 6) If not first iteration, check if this frequency is a duplicate
     if i != 1
       # Find column in frequencies array where there is the closest match
-      dmin, __ = findmin(abs.(view(frequencies, :, 1:(i-1)) .- cur_frequency))
+      dmin, __ = findmin(abs.(view(frequencies, :, 1:(i-1)) .- cur_frequency), dims=2)
       @. good = ifelse(dmin < f_resolution, false, true)
     end
 
